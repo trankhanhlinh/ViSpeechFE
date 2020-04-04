@@ -150,9 +150,9 @@ Copyright (c) 2018 - mital_04
   
     
     // Window on Load
-    $(window).on("load", function(){
+    // $(window).on("load", function(){
       MOXO.WebLoad();
-    });
+    // });
 
     // $(document).on("ready", function(){
         MOXO.HeaderFixed(),

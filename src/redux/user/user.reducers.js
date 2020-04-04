@@ -2,10 +2,52 @@ import UserTypes from './user.types'
 
 const INITIAL_STATE = {
   currentUser: null,
-  errorMessage: null,
-  registerUser: null,
-  isLoading: false,
-  activeEmail: {
+  login: {
+    user: {},
+    isLoading: false,
+    isSuccess: null,
+    message: null,
+  },
+  register: {
+    newUser: null,
+    isLoading: false,
+    isSuccess: null,
+    message: null,
+  },
+  getList: {
+    userList: [],
+    numberOfUsers: 0,
+    isLoading: false,
+    isSuccess: null,
+    message: null,
+  },
+  getInfo: {
+    user: {},
+    isLoading: false,
+    isSuccess: null,
+    message: null,
+  },
+  updateInfo: {
+    isLoading: false,
+    isSuccess: null,
+    message: null,
+  },
+  createUser: {
+    isLoading: false,
+    isSuccess: null,
+    message: null,
+  },
+  deleteUser: {
+    isLoading: false,
+    isSuccess: null,
+    message: null,
+  },
+  sendVerifyEmail: {
+    isSuccess: null,
+    isLoading: null,
+    message: null,
+  },
+  verifyEmail: {
     isSuccess: null,
     isLoading: null,
     message: null,
@@ -36,61 +78,243 @@ const userReducer = (state = INITIAL_STATE, action) => {
       return {
         ...INITIAL_STATE,
       }
+    // LOGIN
+    case UserTypes.LOGIN_START:
+      return {
+        ...state,
+        login: {
+          ...state.login,
+          isLoading: true,
+        },
+      }
     case UserTypes.LOGIN_SUCCESS:
       return {
         ...state,
-        errorMessage: null,
         currentUser: action.payload,
+        login: {
+          isLoading: false,
+          isSuccess: true,
+        },
       }
     case UserTypes.LOGIN_FAILURE:
       return {
         ...state,
-        errorMessage: action.payload,
-        currentUser: null,
+        login: {
+          isLoading: false,
+          isSuccess: false,
+          message: action.payload,
+        },
       }
+    // REGISTER
     case UserTypes.REGISTER_START:
       return {
         ...state,
-        isLoading: true,
+        register: {
+          ...state.register,
+          isLoading: true,
+        },
       }
     case UserTypes.REGISTER_SUCCESS:
       return {
         ...state,
-        errorMessage: null,
-        registerUser: action.payload,
-        isLoading: false,
+        register: {
+          newUser: action.payload,
+          isLoading: false,
+          isSuccess: true,
+        },
       }
     case UserTypes.REGISTER_FAILURE:
       return {
         ...state,
-        errorMessage: action.payload,
-        registerUser: null,
-        isLoading: false,
+        register: {
+          ...state.register,
+          isLoading: false,
+          isSuccess: false,
+          message: action.payload,
+        },
       }
-    // ACTIVE EMAIL
-    case UserTypes.ACTIVE_EMAIL:
+    // GET USER LIST
+    case UserTypes.GET_USER_LIST:
       return {
         ...state,
-        activeEmail: {
-          ...state.activeEmail,
+        getList: {
+          ...state.getList,
           isLoading: true,
         },
       }
-    case UserTypes.ACTIVE_EMAIL_SUCCESS:
+    case UserTypes.GET_USER_LIST_SUCCESS:
       return {
         ...state,
-        activeEmail: {
-          ...state.activeEmail,
+        getList: {
           isLoading: false,
           isSuccess: true,
-          message: null,
+          userList: action.payload.userList,
+          // numberOfUsers: action.payload.numberOfUsers,
         },
       }
-    case UserTypes.ACTIVE_EMAIL_FAILURE:
+    case UserTypes.GET_USER_LIST_FAILURE:
       return {
         ...state,
-        activeEmail: {
-          ...state.activeEmail,
+        getList: {
+          ...state.getList,
+          isLoading: false,
+          isSuccess: false,
+          message: action.payload,
+        },
+      }
+    // GET INFO
+    case UserTypes.GET_USER_INFO:
+      return {
+        ...state,
+        getInfo: {
+          ...state.getInfo,
+          isLoading: true,
+        },
+      }
+    case UserTypes.GET_USER_INFO_SUCCESS:
+      return {
+        ...state,
+        getInfo: {
+          user: action.payload,
+          isLoading: false,
+          isSuccess: true,
+        },
+      }
+    case UserTypes.GET_USER_INFO_FAILURE:
+      return {
+        ...state,
+        getInfo: {
+          ...state.getInfo,
+          isLoading: false,
+          isSuccess: false,
+          message: action.payload,
+        },
+      }
+    // UPDATE INFO
+    case UserTypes.UPDATE_USER_INFO:
+      return {
+        ...state,
+        updateInfo: {
+          ...state.updateInfo,
+          isLoading: true,
+        },
+      }
+    case UserTypes.UPDATE_USER_INFO_SUCCESS:
+      return {
+        ...state,
+        updateInfo: {
+          isLoading: false,
+          isSuccess: true,
+        },
+      }
+    case UserTypes.UPDATE_USER_INFO_FAILURE:
+      return {
+        ...state,
+        updateInfo: {
+          isLoading: false,
+          isSuccess: false,
+          message: action.payload,
+        },
+      }
+    // CREATE USER
+    case UserTypes.CREATE_USER:
+      return {
+        ...state,
+        createUser: {
+          ...state.createUser,
+          isLoading: true,
+        },
+      }
+    case UserTypes.CREATE_USER_SUCCESS:
+      return {
+        ...state,
+        createUser: {
+          isLoading: false,
+          isSuccess: true,
+        },
+      }
+    case UserTypes.CREATE_USER_FAILURE:
+      return {
+        ...state,
+        createUser: {
+          isLoading: false,
+          isSuccess: false,
+          message: action.payload,
+        },
+      }
+    // DELETE USER
+    case UserTypes.DELETE_USER:
+      return {
+        ...state,
+        deleteUser: {
+          ...state.deleteUser,
+          isLoading: true,
+        },
+      }
+    case UserTypes.DELETE_USER_SUCCESS:
+      return {
+        ...state,
+        deleteUser: {
+          isLoading: false,
+          isSuccess: true,
+        },
+      }
+    case UserTypes.DELETE_USER_FAILURE:
+      return {
+        ...state,
+        deleteUser: {
+          isLoading: false,
+          isSuccess: false,
+          message: action.payload,
+        },
+      }
+    // SEND VERIFY EMAIL
+    case UserTypes.SEND_VERIFY_EMAIL:
+      return {
+        ...state,
+        sendVerifyEmail: {
+          ...state.sendVerifyEmail,
+          isLoading: true,
+        },
+      }
+    case UserTypes.SEND_VERIFY_EMAIL_SUCCESS:
+      return {
+        ...state,
+        sendVerifyEmail: {
+          isLoading: false,
+          isSuccess: true,
+        },
+      }
+    case UserTypes.SEND_VERIFY_EMAIL_FAILURE:
+      return {
+        ...state,
+        sendVerifyEmail: {
+          isLoading: false,
+          isSuccess: false,
+          message: action.payload,
+        },
+      }
+    // VERIFY EMAIL
+    case UserTypes.VERIFY_EMAIL:
+      return {
+        ...state,
+        verifyEmail: {
+          ...state.verifyEmail,
+          isLoading: true,
+        },
+      }
+    case UserTypes.VERIFY_EMAIL_SUCCESS:
+      return {
+        ...state,
+        verifyEmail: {
+          isLoading: false,
+          isSuccess: true,
+        },
+      }
+    case UserTypes.VERIFY_EMAIL_FAILURE:
+      return {
+        ...state,
+        verifyEmail: {
           isLoading: false,
           isSuccess: false,
           message: action.payload,
@@ -260,15 +484,6 @@ const userReducer = (state = INITIAL_STATE, action) => {
           isLoading: false,
           isSuccess: null,
           message: null,
-        },
-      }
-    // update user's info
-    case UserTypes.UPDATE_USER_INFO_SUCCESS:
-      return {
-        ...state,
-        currentUser: {
-          ...state.currentUser,
-          ...action.payload,
         },
       }
 

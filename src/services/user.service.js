@@ -1,9 +1,10 @@
+import STORAGE from 'utils/storage'
+import { JWT_TOKEN, DEFAULT_ERR_MESSAGE } from 'utils/constant'
 import apiUrl from './api-url'
-import { JWT_TOKEN } from '../utils/constant'
 
 export default class UserService {
   static login = ({ username, password }) => {
-    const api = `${apiUrl}/user/login`
+    const api = `${apiUrl}/login`
     let status = 400
     // eslint-disable-next-line no-undef
     return fetch(api, {
@@ -21,14 +22,14 @@ export default class UserService {
         return response.json()
       })
       .then(result => {
-        if (status !== 200) {
-          throw new Error(result.message)
+        if (status !== 201) {
+          throw new Error(result.message || DEFAULT_ERR_MESSAGE)
         }
-        this.setPreferences(JWT_TOKEN, result.user.token)
-        return result.user
+        STORAGE.setPreferences(JWT_TOKEN, result.token)
+        return result
       })
       .catch(err => {
-        throw new Error(err)
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
       })
   }
 
@@ -51,18 +52,18 @@ export default class UserService {
       })
       .then(result => {
         if (status !== 200) {
-          throw new Error(result.message)
+          throw new Error(result.message || DEFAULT_ERR_MESSAGE)
         }
-        this.setPreferences(JWT_TOKEN, result.user.token)
+        STORAGE.setPreferences(JWT_TOKEN, result.user.token)
         return result.user
       })
       .catch(err => {
-        throw new Error(err)
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
       })
   }
 
-  static register = ({ username, email, lastName, firstName, password }) => {
-    const api = `${apiUrl}/user/register`
+  static register = ({ username, email, lastName, firstName, password, roles }) => {
+    const api = `${apiUrl}/users`
     let status = 400
     // eslint-disable-next-line no-undef
     return fetch(api, {
@@ -73,6 +74,7 @@ export default class UserService {
         lastName,
         firstName,
         password,
+        roles,
       }),
       headers: {
         'Content-type': 'application/json; charset=UTF-8',
@@ -80,21 +82,23 @@ export default class UserService {
     })
       .then(response => {
         status = response.status
-        return response.json()
+        return response.text()
       })
       .then(result => {
-        if (status !== 200) {
-          throw new Error(result.message)
+        const resultObj = result ? JSON.parse(result) : {}
+        if (status !== 201) {
+          throw new Error(resultObj.message || DEFAULT_ERR_MESSAGE)
         }
-        return result.user
+        return resultObj
       })
       .catch(err => {
-        throw new Error(err)
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
       })
   }
 
   static authenticate = token => {
-    const api = `${apiUrl}/user/authenticate`
+    const api = `${apiUrl}/authenticate`
+    let status = 400
     // eslint-disable-next-line no-undef
     return fetch(api, {
       method: 'GET',
@@ -104,43 +108,32 @@ export default class UserService {
       },
     })
       .then(response => {
+        status = response.status
         return response.json()
       })
-      .then(user => {
-        return user
+      .then(result => {
+        if (status !== 200) {
+          STORAGE.removePreferences(JWT_TOKEN)
+          throw new Error(result.message || DEFAULT_ERR_MESSAGE)
+        }
+        return result
       })
       .catch(err => {
-        this.removePreferences(JWT_TOKEN)
-        throw new Error(err)
+        STORAGE.removePreferences(JWT_TOKEN)
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
       })
   }
 
-  static setPreferences = (key, value) => {
-    // eslint-disable-next-line no-undef
-    localStorage.setItem(key, value)
-  }
+  static getUserList = () => {
+    const api = `${apiUrl}/users`
+    const jwtToken = STORAGE.getPreferences(JWT_TOKEN)
 
-  static getPreferences = key => {
-    // eslint-disable-next-line no-undef
-    return localStorage.getItem(key)
-  }
-
-  static removePreferences = key => {
-    // eslint-disable-next-line no-undef
-    localStorage.removeItem(key)
-  }
-
-  static activeEmail = token => {
-    const api = `${apiUrl}/user/active-email`
     let status = 400
-    // eslint-disable-next-line no-undef
     return fetch(api, {
-      method: 'POST',
-      body: JSON.stringify({
-        token,
-      }),
+      method: 'GET',
       headers: {
         'Content-type': 'application/json; charset=UTF-8',
+        Authorization: `Bearer ${jwtToken}`,
       },
     })
       .then(response => {
@@ -149,12 +142,191 @@ export default class UserService {
       })
       .then(result => {
         if (status !== 200) {
-          throw new Error(result.message)
+          throw new Error(result.message || DEFAULT_ERR_MESSAGE)
         }
         return result
       })
       .catch(err => {
-        throw new Error(err)
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
+      })
+  }
+
+  static getUserInfo = id => {
+    const api = `${apiUrl}/users/${id}`
+    const jwtToken = STORAGE.getPreferences(JWT_TOKEN)
+
+    let status = 400
+    return fetch(api, {
+      method: 'GET',
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    })
+      .then(response => {
+        status = response.status
+        return response.json()
+      })
+      .then(result => {
+        if (status !== 200) {
+          throw new Error(result.message || DEFAULT_ERR_MESSAGE)
+        }
+        return result
+      })
+      .catch(err => {
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
+      })
+  }
+
+  static updateUserInfo = (id, info) => {
+    const api = `${apiUrl}/users/${id}`
+    const jwtToken = STORAGE.getPreferences(JWT_TOKEN)
+
+    let status = 400
+    return fetch(api, {
+      method: 'PUT',
+      body: JSON.stringify({
+        ...info,
+      }),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    })
+      .then(response => {
+        status = response.status
+        return response.text()
+      })
+      .then(result => {
+        const resultObj = result ? JSON.parse(result) : {}
+        if (status !== 200) {
+          throw new Error(resultObj.message || DEFAULT_ERR_MESSAGE)
+        }
+        return resultObj
+      })
+      .catch(err => {
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
+      })
+  }
+
+  static createUser = data => {
+    const api = `${apiUrl}/users`
+    const jwtToken = STORAGE.getPreferences(JWT_TOKEN)
+
+    let status = 400
+    return fetch(api, {
+      method: 'POST',
+      body: JSON.stringify({
+        ...data,
+      }),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    })
+      .then(response => {
+        status = response.status
+        return response.text()
+      })
+      .then(result => {
+        const resultObj = result ? JSON.parse(result) : {}
+        if (status !== 201) {
+          throw new Error(resultObj.message || DEFAULT_ERR_MESSAGE)
+        }
+        return resultObj
+      })
+      .catch(err => {
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
+      })
+  }
+
+  static deleteUser = id => {
+    const api = `${apiUrl}/users/${id}`
+    const jwtToken = STORAGE.getPreferences(JWT_TOKEN)
+
+    let status = 400
+    return fetch(api, {
+      method: 'DELETE',
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    })
+      .then(response => {
+        status = response.status
+        return response.text()
+      })
+      .then(result => {
+        const resultObj = result ? JSON.parse(result) : {}
+        if (status !== 200) {
+          throw new Error(resultObj.message || DEFAULT_ERR_MESSAGE)
+        }
+        return resultObj
+      })
+      .catch(err => {
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
+      })
+  }
+
+  static sendVerifyEmail = userId => {
+    const api = `${apiUrl}/users/send-verify-email`
+    const jwtToken = STORAGE.getPreferences(JWT_TOKEN)
+
+    let status = 400
+    // eslint-disable-next-line no-undef
+    return fetch(api, {
+      method: 'POST',
+      body: JSON.stringify({
+        _id: userId,
+      }),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    })
+      .then(response => {
+        status = response.status
+        return response.text()
+      })
+      .then(result => {
+        const resultObj = result ? JSON.parse(result) : {}
+        if (status !== 201) {
+          throw new Error(resultObj.message || DEFAULT_ERR_MESSAGE)
+        }
+        return resultObj
+      })
+      .catch(err => {
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
+      })
+  }
+
+  static verifyEmail = emailToken => {
+    const api = `${apiUrl}/users/verify-email`
+    const jwtToken = STORAGE.getPreferences(JWT_TOKEN)
+
+    let status = 400
+    // eslint-disable-next-line no-undef
+    return fetch(api, {
+      method: 'POST',
+      body: JSON.stringify({ emailToken }),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    })
+      .then(response => {
+        status = response.status
+        return response.text()
+      })
+      .then(result => {
+        const resultObj = result ? JSON.parse(result) : {}
+        if (status !== 201) {
+          throw new Error(resultObj.message || DEFAULT_ERR_MESSAGE)
+        }
+        return resultObj
+      })
+      .catch(err => {
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
       })
   }
 
@@ -173,44 +345,17 @@ export default class UserService {
     })
       .then(response => {
         status = response.status
-        return response.json()
+        return response.text()
       })
       .then(result => {
+        const resultObj = result ? JSON.parse(result) : {}
         if (status !== 200) {
-          throw new Error(result.message)
+          throw new Error(resultObj.message || DEFAULT_ERR_MESSAGE)
         }
-        return result
+        return resultObj
       })
       .catch(err => {
-        throw new Error(err)
-      })
-  }
-
-  static verifyTokenResetPassword = token => {
-    const api = `${apiUrl}/user/verify-token-reset-password`
-    let status = 400
-    // eslint-disable-next-line no-undef
-    return fetch(api, {
-      method: 'POST',
-      body: JSON.stringify({
-        token,
-      }),
-      headers: {
-        'Content-type': 'application/json; charset=UTF-8',
-      },
-    })
-      .then(response => {
-        status = response.status
-        return response.json()
-      })
-      .then(result => {
-        if (status !== 200) {
-          throw new Error(result.message)
-        }
-        return result.userId
-      })
-      .catch(err => {
-        throw err
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
       })
   }
 
@@ -230,16 +375,17 @@ export default class UserService {
     })
       .then(response => {
         status = response.status
-        return response.json()
+        return response.text()
       })
       .then(result => {
+        const resultObj = result ? JSON.parse(result) : {}
         if (status !== 200) {
-          throw new Error(result.message)
+          throw new Error(resultObj.message || DEFAULT_ERR_MESSAGE)
         }
-        return result
+        return resultObj
       })
       .catch(err => {
-        throw err
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
       })
   }
 
@@ -260,45 +406,46 @@ export default class UserService {
     })
       .then(response => {
         status = response.status
-        return response.json()
+        return response.text()
       })
       .then(result => {
+        const resultObj = result ? JSON.parse(result) : {}
         if (status !== 200) {
-          throw new Error(result.message)
+          throw new Error(resultObj.message || DEFAULT_ERR_MESSAGE)
         }
-        return result
+        return resultObj
       })
       .catch(err => {
-        throw err
+        throw new Error(err.message || DEFAULT_ERR_MESSAGE)
       })
   }
 
-  static updateAvatar = ({ avatar, token }) => {
-    const api = `${apiUrl}/user/update-avatar`
-    let status = 400
-    // eslint-disable-next-line no-undef
-    return fetch(api, {
-      method: 'POST',
-      body: JSON.stringify({
-        avatar,
-      }),
-      headers: {
-        'Content-type': 'application/json; charset=UTF-8',
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(response => {
-        status = response.status
-        return response.json()
-      })
-      .then(result => {
-        if (status !== 200) {
-          throw new Error(result.message)
-        }
-        return result
-      })
-      .catch(err => {
-        throw err
-      })
-  }
+  // static updateAvatar = ({ avatar, token }) => {
+  //   const api = `${apiUrl}/user/update-avatar`
+  //   let status = 400
+  //   // eslint-disable-next-line no-undef
+  //   return fetch(api, {
+  //     method: 'POST',
+  //     body: JSON.stringify({
+  //       avatar,
+  //     }),
+  //     headers: {
+  //       'Content-type': 'application/json; charset=UTF-8',
+  //       Authorization: `Bearer ${token}`,
+  //     },
+  //   })
+  //     .then(response => {
+  //       status = response.status
+  //       return response.json()
+  //     })
+  //     .then(result => {
+  //       if (status !== 200) {
+  //         throw new Error(result.message)
+  //       }
+  //       return result
+  //     })
+  //     .catch(err => {
+  //       throw err
+  //     })
+  // }
 }

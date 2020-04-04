@@ -1,20 +1,39 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState } from 'react'
 import { withRouter } from 'react-router'
-import { CUSTOMER_PATH } from 'utils/constant'
+import { CUSTOMER_PATH, JWT_TOKEN } from 'utils/constant'
+import STORAGE from 'utils/storage'
 
-const Header = () => {
+const Header = ({ currentUser, onAuthenticate, logout }) => {
   const [userLinks, setUserLinks] = useState([])
   const [navbarMenu, setNavbarMenu] = useState([])
 
   useEffect(() => {
     const userLinksArr = [
-      { href: `${CUSTOMER_PATH}/profile`, iconClass: 'ti-id-badge', name: 'Trang cá nhân' },
-      { href: `${CUSTOMER_PATH}/transactions`, iconClass: 'ti-eye', name: 'Lịch sử giao dịch' },
+      {
+        href: `${CUSTOMER_PATH}/profile`,
+        iconClass: 'ti-id-badge',
+        name: 'Trang cá nhân',
+      },
+      {
+        href: `${CUSTOMER_PATH}/transactions`,
+        iconClass: 'ti-eye',
+        name: 'Lịch sử giao dịch',
+      },
     ]
     const navbarMenuArr = [
-      { href: `${CUSTOMER_PATH}`, emClass: 'ikon-dashboard', name: 'Trang chủ' },
-      { href: `${CUSTOMER_PATH}/tokens-wallet`, emClass: 'ikon-distribution', name: 'Ví key' },
+      {
+        href: `${CUSTOMER_PATH}`,
+        emClass: 'ikon-dashboard',
+        name: 'Trang chủ',
+      },
+      {
+        href: `${CUSTOMER_PATH}/projects`,
+        emClass: 'ikon-coins',
+        name: 'Project',
+      },
       {
         href: `${CUSTOMER_PATH}/transactions`,
         emClass: 'ikon-transactions',
@@ -25,10 +44,10 @@ const Header = () => {
     setNavbarMenu(navbarMenuArr)
   }, [])
 
-  // useEffect(() => {
-  //   const token = UserService.getPreferences(JWT_TOKEN)
-  //   if (!currentUser && token) onAuthenticate(token)
-  // }, [currentUser, onAuthenticate])
+  useEffect(() => {
+    const token = STORAGE.getPreferences(JWT_TOKEN)
+    if ((!currentUser._id && token) || !token) onAuthenticate(token)
+  }, [currentUser._id, onAuthenticate])
 
   // useEffect(() => {
   //   let interval
@@ -93,7 +112,7 @@ const Header = () => {
               <ul className="topbar-nav">
                 <li className="topbar-nav-item relative">
                   <span className="user-welcome d-none d-lg-inline-block">
-                    Chào mừng, Khánh Linh
+                    Chào mừng, {currentUser.lastName} {currentUser.firstName}
                   </span>
                   <a href="#" className="toggle-tigger user-thumb">
                     <em className="ti ti-user" />
@@ -119,7 +138,7 @@ const Header = () => {
                     </ul>
                     <ul className="user-links bg-light">
                       <li>
-                        <a href="#">
+                        <a href="javascript:void(0)" onClick={logout}>
                           <i className="ti ti-power-off" />
                           Đăng xuất
                         </a>
@@ -155,3 +174,4 @@ const Header = () => {
 }
 
 export default withRouter(Header)
+// You can get access to the history object’s properties and the closest <Route>'s match via the withRouter higher-order component. withRouter will pass updated match, location, and history props to the wrapped component whenever it renders.

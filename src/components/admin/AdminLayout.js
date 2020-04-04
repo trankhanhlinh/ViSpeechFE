@@ -1,33 +1,13 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from 'react'
-import Sidebar from './Sidebar/Sidebar.component'
+import Sidebar from './Sidebar/Sidebar.container'
 import Navbar from './Navbar/Navbar.component'
 import Footer from './Footer/Footer.container'
 
 const AdminLayout = ({ children }) => {
   return (
     <>
-      <link
-        rel="stylesheet"
-        href={`${process.env.PUBLIC_URL}/assets/css/admin/bootstrap.min.css`}
-        id="layoutstyle"
-      />
-      <link
-        rel="stylesheet"
-        href={`${process.env.PUBLIC_URL}/assets/css/admin/turbo.css`}
-        id="layoutstyle"
-      />
-      <link
-        rel="stylesheet"
-        href={`${process.env.PUBLIC_URL}/assets/css/admin/material-design-iconic-font/dist/css/material-design-iconic-font.min.css`}
-        id="layoutstyle"
-      />
-      <link
-        rel="stylesheet"
-        type="text/css"
-        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons"
-      />
       <div className="wrapper">
         <Sidebar />
         <div className="main-panel">
@@ -39,7 +19,7 @@ const AdminLayout = ({ children }) => {
           </div>
           <Footer />
         </div>
-        <div className="fixed-plugin">
+        {/* <div className="fixed-plugin">
           <div className="dropdown show-dropdown">
             <a href="#" data-toggle="dropdown" aria-expanded="false">
               <i className="fa fa-cog fa-2x"> </i>
@@ -82,7 +62,7 @@ const AdminLayout = ({ children }) => {
               </li>
             </ul>
           </div>
-        </div>
+        </div> */}
       </div>
     </>
   )

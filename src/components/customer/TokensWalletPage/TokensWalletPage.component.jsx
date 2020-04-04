@@ -1,156 +1,164 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable react/button-has-type */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React, { useState, useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
+import { useParams, useLocation, Link } from 'react-router-dom'
 import { CUSTOMER_PATH } from 'utils/constant'
+import ReactTable from 'components/customer/ReactTable/ReactTable.component'
 
-const TokensWalletPage = () => {
-  const [tableData, setTableData] = useState([])
+const TokensWalletPage = ({
+  currentUser,
+  getProjectInfoObj,
+  getTokenListObj,
+  getProjectInfo,
+  getTokens,
+}) => {
+  const { id } = useParams()
+  const { pathname } = useLocation()
 
   useEffect(() => {
-    const tableDataArr = [
-      {
-        key:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJWaVNwZWVjaCIsInVzZXJJbmZvIjp7IklEIjo3LCJVU0VSTkFNRSI6InRrbGluaCJ9LCJpYXQiOjE1NzM4NzM2MjQxMDh9.YsrL08aZbZbZOKiCE6-SlwGjbpQJiOLxctSatzC5F0ur8',
-        state: {
-          name: 'Hợp lệ',
-          class: 'data-state-approved',
-        },
-        timeRemaining: '7 ngày',
+    getProjectInfo(id)
+  }, [id, getProjectInfo])
+
+  const columns = [
+    {
+      Header: 'Token',
+      accessor: 'value',
+      headerClassName: 'data-col dt-tnxno',
+      className: 'data-col dt-tnxno',
+      style: { paddingRight: '30px' },
+      Cell: props => {
+        const { cell } = props
+        return (
+          <span className="lead tnx-id">
+            <div className="copy-wrap w-100">
+              <span className="copy-feedback" />
+              <em className="fas fa-key" />
+              <input type="text" className="copy-address" defaultValue={cell.value} disabled />
+              <button className="copy-trigger copy-clipboard" data-clipboard-text={cell.value}>
+                <em className="ti ti-files" />
+              </button>
+            </div>
+          </span>
+        )
       },
-      {
-        key:
-          'ayJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJWaVNwZWVjaCIsInVzZXJJbmZvIjp7IklEIjo3LCJVU0VSTkFNRSI6InRrbGluaCJ9LCJpYXQiOjE1NzM4NzM2MjQxMDh9.YsrL08aZbZbZOKiCE6-SlwGjbpQJiOLxctSatzC5F0ur8',
-        state: {
-          name: 'Có vấn đề',
-          class: 'data-state-pending',
-        },
-        timeRemaining: '7 ngày',
+    },
+    {
+      Header: 'Loại token',
+      accessor: 'tokenType',
+      headerClassName: 'data-col dt-type',
+      className: 'data-col dt-tnxno',
+      style: { paddingRight: '30px' },
+      Cell: props => {
+        const { cell } = props
+        return <div className="d-flex align-items-center">{cell.value}</div>
       },
-      {
-        key:
-          'byJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJWaVNwZWVjaCIsInVzZXJJbmZvIjp7IklEIjo3LCJVU0VSTkFNRSI6InRrbGluaCJ9LCJpYXQiOjE1NzM4NzM2MjQxMDh9.YsrL08aZbZbZOKiCE6-SlwGjbpQJiOLxctSatzC5F0ur8',
-        state: {
-          name: 'Hợp lệ',
-          class: 'data-state-approved',
-        },
-        timeRemaining: '7 ngày',
+    },
+    {
+      Header: 'Trạng thái',
+      accessor: 'isValid',
+      headerClassName: 'data-col dt-token',
+      className: 'data-col dt-amount',
+      Cell: props => {
+        const { cell } = props
+        return (
+          <div className="d-flex align-items-center">
+            <div
+              className={`data-state ${cell.value ? 'data-state-approved' : 'data-state-canceled'}`}
+            />
+            <span className="sub sub-s2" style={{ paddingTop: '0' }}>
+              {cell.value ? 'Hợp lệ' : 'Có vấn đề'}
+            </span>
+          </div>
+        )
       },
-      {
-        key:
-          'cyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJWaVNwZWVjaCIsInVzZXJJbmZvIjp7IklEIjo3LCJVU0VSTkFNRSI6InRrbGluaCJ9LCJpYXQiOjE1NzM4NzM2MjQxMDh9.YsrL08aZbZbZOKiCE6-SlwGjbpQJiOLxctSatzC5F0ur8',
-        state: {
-          name: 'Có vấn đề',
-          class: 'data-state-pending',
-        },
-        timeRemaining: '7 ngày',
+    },
+    {
+      Header: 'Thời gian còn lại',
+      accessor: 'minutesLeft',
+      headerClassName: 'data-col dt-amount',
+      headerStyle: { textAlign: 'center' },
+      style: { textAlign: 'center' },
+      className: 'data-col dt-account',
+      Cell: props => {
+        const { cell } = props
+        return <span className="lead">{cell.value} phút</span>
       },
-      {
-        key:
-          'dyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJWaVNwZWVjaCIsInVzZXJJbmZvIjp7IklEIjo3LCJVU0VSTkFNRSI6InRrbGluaCJ9LCJpYXQiOjE1NzM4NzM2MjQxMDh9.YsrL08aZbZbZOKiCE6-SlwGjbpQJiOLxctSatzC5F0ur8',
-        state: {
-          name: 'Hợp lệ',
-          class: 'data-state-approved',
-        },
-        timeRemaining: '7 ngày',
+    },
+    {
+      Header: '',
+      accessor: '',
+      id: 'transaction-detail',
+      headerClassName: 'data-col',
+      className: 'data-col text-right',
+      Cell: () => {
+        return (
+          <a
+            href={`${CUSTOMER_PATH}/transaction-details`}
+            className="btn btn-light-alt btn-xs btn-icon"
+          >
+            <em className="ti ti-eye" />
+          </a>
+        )
       },
-      {
-        key:
-          'fyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJWaVNwZWVjaCIsInVzZXJJbmZvIjp7IklEIjo3LCJVU0VSTkFNRSI6InRrbGluaCJ9LCJpYXQiOjE1NzM4NzM2MjQxMDh9.YsrL08aZbZbZOKiCE6-SlwGjbpQJiOLxctSatzC5F0ur8',
-        state: {
-          name: 'Có vấn đề',
-          class: 'data-state-pending',
-        },
-        timeRemaining: '7 ngày',
-      },
-      {
-        key:
-          'gyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJWaVNwZWVjaCIsInVzZXJJbmZvIjp7IklEIjo3LCJVU0VSTkFNRSI6InRrbGluaCJ9LCJpYXQiOjE1NzM4NzM2MjQxMDh9.YsrL08aZbZbZOKiCE6-SlwGjbpQJiOLxctSatzC5F0ur8',
-        state: {
-          name: 'Hợp lệ',
-          class: 'data-state-approved',
-        },
-        timeRemaining: '7 ngày',
-      },
-      {
-        key:
-          'hyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJWaVNwZWVjaCIsInVzZXJJbmZvIjp7IklEIjo3LCJVU0VSTkFNRSI6InRrbGluaCJ9LCJpYXQiOjE1NzM4NzM2MjQxMDh9.YsrL08aZbZbZOKiCE6-SlwGjbpQJiOLxctSatzC5F0ur8',
-        state: {
-          name: 'Có vấn đề',
-          class: 'data-state-pending',
-        },
-        timeRemaining: '7 ngày',
-      },
-    ]
-    setTableData(tableDataArr)
-  }, [])
+    },
+  ]
+
+  const getProjectTokens = useCallback(
+    ({ pageIndex, pageSize }) => {
+      const projectOwnerId = getProjectInfoObj.project.userId
+      if (pathname.includes('accepted-project') && projectOwnerId) {
+        getTokens({ userId: projectOwnerId, projectId: id, pageIndex, pageSize })
+      }
+      if (pathname.includes('my-project')) {
+        getTokens({ userId: currentUser._id, projectId: id, pageIndex, pageSize })
+      }
+    },
+    [currentUser._id, id, pathname, getProjectInfoObj.project.userId, getTokens]
+  )
+
   return (
     <div className="page-content">
       <div className="container">
         <div className="card content-area">
           <div className="card-innr">
-            <div className="card-head">
-              <h4 className="card-title">Ví key</h4>
+            <div className="card-head d-flex justify-content-between align-items-center">
+              {getProjectInfoObj.project && (
+                <>
+                  <h4 className="card-title mb-0">{getProjectInfoObj.project.name}</h4>
+                  {currentUser && getProjectInfoObj.project.userId === currentUser._id && (
+                    <>
+                      <Link
+                        to={`${CUSTOMER_PATH}/assign-permission?projectName=${getProjectInfoObj.project.name}`}
+                        className="btn btn-sm btn-auto btn-primary d-sm-block d-none"
+                      >
+                        Mời tham gia
+                        <em className="fas fa-user-plus ml-3" />
+                      </Link>
+                      <Link
+                        to={`${CUSTOMER_PATH}/assign-permission?projectName=${getProjectInfoObj.project.name}`}
+                        className="btn btn-icon btn-sm btn-primary d-sm-none"
+                      >
+                        <em className="fas fa-user-plus" />
+                      </Link>
+                    </>
+                  )}
+                </>
+              )}
             </div>
-            <table className="data-table dt-init user-tnx">
-              <thead>
-                <tr className="data-item data-head">
-                  <th className="data-col dt-tnxno">Key</th>
-                  <th className="data-col dt-token">Trạng thái</th>
-                  <th className="data-col dt-amount" style={{ textAlign: 'center' }}>
-                    Thời gian còn lại
-                  </th>
-                  <th className="data-col" />
-                </tr>
-              </thead>
-              <tbody>
-                {tableData.map(dataItem => {
-                  return (
-                    <tr className="data-item" key={dataItem.key}>
-                      <td className="data-col dt-tnxno" style={{ paddingRight: '30px' }}>
-                        <span className="lead tnx-id">
-                          <div className="copy-wrap w-100">
-                            <span className="copy-feedback" />
-                            <em className="fas fa-key" />
-                            <input
-                              type="text"
-                              className="copy-address"
-                              defaultValue={dataItem.key}
-                              disabled
-                            />
-                            <button
-                              className="copy-trigger copy-clipboard"
-                              data-clipboard-text={dataItem.key}
-                            >
-                              <em className="ti ti-files" />
-                            </button>
-                          </div>
-                        </span>
-                      </td>
-                      <td className="data-col dt-token">
-                        <div className="d-flex align-items-center">
-                          <div className={`data-state ${dataItem.state.class}`} />
-                          <span className="sub sub-s2" style={{ paddingTop: '0' }}>
-                            {dataItem.state.name}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="data-col dt-amount" style={{ textAlign: 'center' }}>
-                        <span className="sub sub-date">{dataItem.timeRemaining}</span>
-                      </td>
-                      <td className="data-col text-right">
-                        <a
-                          href={`${CUSTOMER_PATH}/transaction-details`}
-                          className="btn btn-light-alt btn-xs btn-icon"
-                        >
-                          <em className="ti ti-eye" />
-                        </a>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+            <div className="gaps-1x" />
+            {currentUser._id && (
+              <ReactTable
+                columns={columns}
+                data={getTokenListObj.tokenList}
+                fetchData={getProjectTokens}
+                loading={getTokenListObj.isLoading}
+                pageCount={Math.ceil(getTokenListObj.tokenList.length / 5)}
+                defaultPageSize={5}
+                pageSize={5}
+              />
+            )}
           </div>
         </div>
       </div>

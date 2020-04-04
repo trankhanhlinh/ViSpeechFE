@@ -1,31 +1,94 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState, useEffect } from 'react'
-import PayOption from './components/PayOption/PayOption.component'
-import PayOnlineModal from './components/PayOnlineModal/PayOnlineModal.component'
+import React, { useEffect, useState } from 'react'
+import Utils from 'utils'
+import InfoModal from 'components/customer/InfoModal/InfoModal.component'
+import { CUSTOMER_PATH } from 'utils/constant'
+import TokenType from './components/TokenType/TokenType.component'
+import PayOnlineModal from './components/PayOnlineModal/PayOnlineModal.container'
 
-const TokenStatistics = () => {
-  const [payOptions, setPayOptions] = useState([])
+const TokenStatistics = ({
+  history,
+  currentUser,
+  getTokenTypeListObj,
+  getMyProjectListObj,
+  getTokenTypes,
+  getMyProjects,
+}) => {
+  const [payOnlineModal, setPayOnlineModal] = useState({})
+  const [infoModal, setInfoModal] = useState({})
 
   useEffect(() => {
-    const payOptionsArr = [
-      {
-        type: 'free',
-        price: 'miễn phí',
-        time: '10 tháng',
-        defaultChecked: true,
-      },
-      {
-        type: 'three-month',
-        price: '100.000đ',
-        time: '1 tháng',
-        saleOff: { price: '50.000đ', time: '1 tháng' },
-      },
-      { type: 'payeth', price: '500.000đ', time: '6 tháng' },
-      { type: 'one-year', price: '800.000đ', time: '1 năm' },
-    ]
-    setPayOptions(payOptionsArr)
-  }, [])
+    getTokenTypes()
+  }, [getTokenTypes])
+
+  useEffect(() => {
+    if (currentUser._id) {
+      getMyProjects({ userId: currentUser._id })
+    }
+  }, [currentUser._id, getMyProjects])
+
+  const openPayOnlineModal = () => {
+    if (!Utils.isEmailVerified(currentUser.roles)) {
+      const infoObj = {
+        title: 'Không thể thực hiện tác vụ',
+        message:
+          'Tài khoản của bạn chưa được kích hoạt. Vui lòng thực hiện xác thực email tại trang cá nhân để kích hoạt tài khoản.',
+        icon: {
+          isSuccess: false,
+        },
+        button: {
+          content: 'Đến trang cá nhân',
+          clickFunc: () => {
+            window.$('#info-modal').modal('hide')
+            history.push(`${CUSTOMER_PATH}/profile`)
+          },
+        },
+      }
+      setInfoModal(infoObj)
+      window.$('#info-modal').modal('show')
+      return
+    }
+
+    if (getMyProjectListObj.myProjectList.length === 0) {
+      const infoObj = {
+        title: 'Không thể thực hiện tác vụ',
+        message: 'Bạn chưa có project nào. Tạo project để thực hiện tác vụ này.',
+        icon: {
+          isSuccess: false,
+        },
+        button: {
+          content: 'Tạo project',
+          clickFunc: () => {
+            window.$('#info-modal').modal('hide')
+            history.push(`${CUSTOMER_PATH}/create-project`)
+          },
+        },
+      }
+      setInfoModal(infoObj)
+      window.$('#info-modal').modal('show')
+      return
+    }
+
+    const selectedTypeId = window
+      .$('.token-currency-choose .pay-option input[name="tokenType"]:checked')
+      .attr('id')
+    const index = getTokenTypeListObj.tokenTypeList.findIndex(x => x._id === selectedTypeId)
+    let selectedType = getTokenTypeListObj.tokenTypeList[index]
+    selectedType = Utils.removePropertiesFromObject(selectedType, [
+      'defaultChecked',
+      'saleOff',
+      'createdDate',
+      'updatedDate',
+    ])
+    const payOnlineObj = {
+      user: currentUser,
+      tokenType: selectedType,
+    }
+    setPayOnlineModal(payOnlineObj)
+    window.$('#pay-online').modal('show')
+  }
 
   return (
     <>
@@ -36,29 +99,31 @@ const TokenStatistics = () => {
           </div>
           <div className="token-balance-text">
             <h3 className="card-sub-title" style={{ fontSize: '16px', color: '#fff' }}>
-              Các gói key
+              Các gói token
             </h3>
           </div>
         </div>
         <div className="token-balance token-balance-s2">
           <div className="token-currency-choose" style={{ color: '#495463' }}>
             <div className="row guttar-15px" style={{ display: 'flex' }}>
-              {payOptions.map(payOption => {
-                return (
-                  <div className="col-3" key={payOption.type}>
-                    <PayOption payOption={payOption} />
-                  </div>
-                )
-              })}
+              {getTokenTypeListObj.tokenTypeList &&
+                Utils.sortArr(getTokenTypeListObj.tokenTypeList, (a, b) => a.price - b.price).map(
+                  tokenType => {
+                    return (
+                      <div className="col-3" key={tokenType._id}>
+                        <TokenType tokenType={tokenType} />
+                      </div>
+                    )
+                  }
+                )}
             </div>
           </div>
         </div>
         <div style={{ float: 'right' }}>
           <a
-            href="#"
+            href="#!"
             className="btn btn-warning"
-            data-toggle="modal"
-            data-target="#pay-online"
+            onClick={openPayOnlineModal}
             style={{ display: 'flex', justifyContent: 'center' }}
           >
             <em className="pay-icon fas fa-dollar-sign" />
@@ -66,7 +131,11 @@ const TokenStatistics = () => {
           </a>
         </div>
       </div>
-      <PayOnlineModal payOnlineModal={{ price: '100.000', time: '1 tháng' }} />
+      <PayOnlineModal
+        payOnlineModal={payOnlineModal}
+        myProjectList={getMyProjectListObj.myProjectList}
+      />
+      <InfoModal infoModal={infoModal} />
     </>
   )
 }
