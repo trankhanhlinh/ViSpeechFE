@@ -4,6 +4,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useCallback, useEffect } from 'react'
 import { useParams, useLocation, Link } from 'react-router-dom'
+import * as moment from 'moment'
 import { CUSTOMER_PATH } from 'utils/constant'
 import ReactTable from 'components/customer/ReactTable/ReactTable.component'
 
@@ -88,14 +89,15 @@ const TokensWalletPage = ({
     },
     {
       Header: '',
-      accessor: '',
+      accessor: '_id',
       id: 'transaction-detail',
       headerClassName: 'data-col',
       className: 'data-col text-right',
-      Cell: () => {
+      Cell: props => {
+        const { cell } = props
         return (
           <a
-            href={`${CUSTOMER_PATH}/transaction-details`}
+            href={`${CUSTOMER_PATH}/transaction-details?tokenId=${cell.value}`}
             className="btn btn-light-alt btn-xs btn-icon"
           >
             <em className="ti ti-eye" />
@@ -147,7 +149,34 @@ const TokensWalletPage = ({
                 </>
               )}
             </div>
-            <div className="gaps-1x" />
+            <div className="gaps-2x" />
+            <div className="data-details d-md-flex">
+              <div className="fake-class">
+                <span className="data-details-title">Tên dự án</span>
+                <span className="data-details-info">
+                  <strong>{getProjectInfoObj.project.name}</strong>
+                </span>
+              </div>
+              <div className="fake-class">
+                <span className="data-details-title">Mô tả</span>
+                <span className="data-details-info">
+                  <strong>{getProjectInfoObj.project.description}</strong>
+                </span>
+              </div>
+              <div className="fake-class">
+                <span className="data-details-title">Thời gian tạo</span>
+                <span className="data-details-info">
+                  {moment(getProjectInfoObj.project.createdDate).format('DD/MM/YYYY hh:mm:ss')}
+                </span>
+              </div>
+              <div className="fake-class">
+                <span className="data-details-title">Thời gian cập nhật</span>
+                <span className="data-details-info">
+                  {moment(getProjectInfoObj.project.updatedDate).format('DD/MM/YYYY hh:mm:ss')}
+                </span>
+              </div>
+            </div>
+            <div className="gaps-5x" />
             {currentUser._id && (
               <ReactTable
                 columns={columns}

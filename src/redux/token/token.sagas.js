@@ -70,8 +70,8 @@ const formatTokenTypeList = tokenTypeList => {
   const mapFunc = (tokenType, index) => {
     return {
       ...tokenType,
-      defaultChecked: index === 0,
-      saleOff: null,
+      defaultChecked: index === 1,
+      saleOffPrice: ((100 - Number(tokenType.salePercent || 0)) * Number(tokenType.price)) / 100,
     }
   }
   // const filterFunc = tokenType => tokenType.name !== TOKEN_TYPE.FREE.name
