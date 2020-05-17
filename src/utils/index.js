@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom'
-import { ROLES } from './constant'
+import { ROLES, SORT_ORDER } from './constant'
 
 const Utils = {
   checkIfIsUser: roleList => {
@@ -11,23 +11,8 @@ const Utils = {
       -1
     )
   },
-  getRolesInText: roleList => {
-    let rolesInText = ''
-    roleList.forEach(role => {
-      rolesInText += `${role.name}, `
-    })
-    rolesInText = rolesInText.slice(0, rolesInText.lastIndexOf(','))
-    return rolesInText.trim()
-  },
   getRolesInArray: roleList => {
     return roleList.map(role => role.name)
-  },
-  formatRolesToSubmit: roleList => {
-    const roles = []
-    roleList.forEach(role => {
-      if (role.isSelected) roles.push({ name: role.name })
-    })
-    return roles
   },
   parameterizeObject: (obj, prefix) => {
     if (!obj) return ''
@@ -86,8 +71,18 @@ const Utils = {
     const a = result.sort(sortFunc)
     return a.filter(filterFunc).map(item => item)
   },
+  getSortOrder: sortOrder => {
+    let result = sortOrder
+    if (sortOrder === 'ascend') {
+      result = SORT_ORDER.ASC
+    }
+    if (sortOrder === 'descend') {
+      result = SORT_ORDER.DESC
+    }
+    return result
+  },
   isEmailVerified: roles => {
-    return Utils.getRolesInArray(roles).indexOf(ROLES.MANAGER_USER) !== -1
+    return Utils.getRolesInArray(roles).includes(ROLES.MANAGER_USER)
   },
   useQuery: () => {
     return new URLSearchParams(useLocation().search)
@@ -95,13 +90,45 @@ const Utils = {
   buildFailedMessage: (errorObj, failedAction) => {
     const { code, message } = errorObj || {}
     let errMessage = ''
-    if (code) {
-      errMessage += `[${code}]: `
-    }
     if (message) {
-      errMessage += message
+      errMessage = message
+      if (code === '11000') {
+        errMessage = 'Dữ liệu này đã tồn tại.'
+
+        const dupKey = 'dup key: '
+        const indexDup = message.indexOf(dupKey)
+        if (indexDup >= 0) {
+          errMessage = `Đã tồn tại ${message
+            .substr(indexDup + dupKey.length)
+            .replace(/[^a-zA-Z0-9@./S]/g, ' ')}`
+        }
+      }
     }
-    return failedAction ? `${failedAction}.<br/>Lỗi ${errMessage}` : `Lỗi ${errMessage}`
+    // case duplicate
+    return failedAction ? `${failedAction}.<br/>${errMessage}` : `${errMessage}`
+  },
+  buildSortQuery: (sortField, sortOrder) => {
+    if (sortField && sortOrder) {
+      const sort = {
+        field: sortField,
+        order: Utils.getSortOrder(sortOrder),
+      }
+      return `&${Utils.parameterizeObject({ sort })}`
+    }
+    return ''
+  },
+  buildFiltersQuery: filters => {
+    if (typeof filters === 'object' && Object.keys(filters).length > 0) {
+      const formatFilters = {}
+      Object.keys(filters).forEach(key => {
+        if (Array.isArray(filters[key])) {
+          const [filterValue] = filters[key]
+          formatFilters[key] = filterValue
+        }
+      })
+      return `&${Utils.parameterizeObject({ filters: formatFilters })}`
+    }
+    return ''
   },
 }
 

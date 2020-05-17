@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import TokenTransaction from './TokenTransaction.component'
+import TokenSaleGraph from './TokenSaleGraph.component'
 import { getOrderList } from '../../../../../redux/order/order.actions'
 
 const mapStateToProps = state => ({
@@ -12,6 +12,6 @@ const mapDispatchToProps = dispatch => ({
     dispatch(getOrderList({ userId, pageIndex, pageSize })),
 })
 
-const TokenTransactionContainer = connect(mapStateToProps, mapDispatchToProps)(TokenTransaction)
+const TokenSaleGraphContainer = connect(mapStateToProps, mapDispatchToProps)(TokenSaleGraph)
 
-export default TokenTransactionContainer
+export default TokenSaleGraphContainer
